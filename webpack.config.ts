@@ -12,6 +12,8 @@ const {
     CleanWebpackPlugin
 } = require('clean-webpack-plugin');
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 // Оптимизация
 const TerserPlugin = require('terser-webpack-plugin');
 
@@ -25,6 +27,7 @@ module.exports = {
     entry: './src/index.tsx',
     output: {
         path: path.resolve(__dirname, 'dist'),
+        publicPath: '/',
         filename: 'bundle.js',
         clean: true,
     },
@@ -63,6 +66,18 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: 'main.bundle.css',
         }),
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: path.resolve(__dirname, 'public'),
+                    to: path.resolve(__dirname, 'dist'),
+                    globOptions: {
+                        ignore: ['**/index.html']
+                    },
+                    noErrorOnMissing: true // Не ругайся, если папка с файлами пуста
+                }
+            ]
+        }),
         // Анализатор занятости места
         new BundleAnalyzerPlugin(),
         // Очистка перед каждой сборкой
@@ -70,7 +85,7 @@ module.exports = {
     ],
     devServer: {
         static: {
-            directory: path.join(__dirname, 'dist'),
+            directory: path.join(__dirname, 'public')
         },
         compress: true,
         port: 3000,

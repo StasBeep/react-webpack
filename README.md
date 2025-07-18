@@ -216,5 +216,77 @@ npm run build
     npm install ts-loader source-map-loader
     ```
 
+16. Для работы с изображениями и другими подключениями
+    ```
+    npm install copy-webpack-plugin --save-dev
+    ```
+
+    и прописать в `webpack.config.ts`
+    ```
+    const CopyWebpackPlugin = require('copy-webpack-plugin'); // Подключить плагин
+
+
+    --\\--
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: '/', // Добавить эту строку
+        filename: 'bundle.js',
+        clean: true,
+    },
+
+    --\\--
+
+    plugins: [
+        --\\--
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: path.resolve(__dirname, 'public'),
+                    to: path.resolve(__dirname, 'dist'),
+                    globOptions: {
+                        ignore: ['**/index.html']
+                    }
+                }
+            ]
+        }),
+        --\\--
+    ],
+
+    devServer: {
+        static: {
+            directory: path.join(__dirname, 'public'), // Добавить эту строку
+        },
+        compress: true,
+        port: 3000,
+        hot: true,
+        open: true,
+    },
+    ```
+
+    если папка с файлами пуста, может выскочить ошибка:
+    ```error
+    /react-webpack/public/**/*' glob
+    ```
+
+    чтобы её решить (не добавлять файлы, пока они не нужны) - надо добавить в `webpack.config.ts`:
+    ```
+    ...
+    new CopyWebpackPlugin({
+        patterns: [
+            {
+                from: path.resolve(__dirname, 'public'),
+                to: path.resolve(__dirname, 'dist'),
+                globOptions: {
+                    ignore: ['**/index.html']
+                },
+                noErrorOnMissing: true // Не ругайся, если папка с файлами пуста
+            }
+        ]
+    }),
+    ...
+    ```
+
+    Строку `noErrorOnMissing: true` можно будет убрать
+
 ---
 Подключены другие плагины работы с webpack при сборке + предпроцессоры

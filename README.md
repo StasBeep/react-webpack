@@ -406,3 +406,25 @@ module.exports = {
     },
 };
 ```
+
+---
+Подключение Router к проекту
+```
+npm install react-router-dom --save
+```
+
+Изменить `App.tsx`
+```
+import { BrowserRouter } from "react-router-dom";
+import Router from "../router/Router";
+
+function App() {
+    return (
+        <BrowserRouter>
+            <Router />
+        </BrowserRouter>
+    );
+}
+
+export default App;
+```

@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // Минимзация файлов css
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const Dotenv = require('dotenv-webpack');
 
 // Нужен для анализа, при финальной сборке проверить на память
 const {
@@ -32,7 +33,10 @@ module.exports = {
         clean: true,
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.tsx', '.jsx', '.ts', '.js'],
+        alias: {
+            '@': path.resolve(__dirname, 'src'),
+        }
     },
     optimization: {
         minimize: true,
@@ -70,6 +74,13 @@ module.exports = {
                 generator: {
                     filename: 'assets/[hash][ext][query]' // Организация ассетов
                 }
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/i,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[hash][ext][query]'
+                }
             }
         ],
     },
@@ -80,6 +91,7 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css', // Добавляем хеш
         }),
+        new Dotenv(), // загружает переменные из .env
         new CopyWebpackPlugin({
             patterns: [
                 {
@@ -87,14 +99,15 @@ module.exports = {
                     to: path.resolve(__dirname, 'dist'),
                     globOptions: {
                         ignore: ['**/index.html']
-                    }
+                    },
+                    noErrorOnMissing: true // Не ругайся, если папка с файлами пуста
                 }
             ]
         }),
         // Анализатор занятости места
         // new BundleAnalyzerPlugin(),
         // Очистка перед каждой сборкой
-        new CleanWebpackPlugin(),
+        new CleanWebpackPlugin()
     ],
     devServer: {
         static: {

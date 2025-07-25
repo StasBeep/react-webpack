@@ -347,7 +347,10 @@ module.exports = {
         clean: true,
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.tsx', '.jsx', '.ts', '.js'],
+        alias: {
+            '@': path.resolve(__dirname, 'src'),
+        },
     },
     optimization: {
         minimize: true,
@@ -384,6 +387,13 @@ module.exports = {
                 type: 'asset/resource',
                 generator: {
                     filename: 'assets/[hash][ext][query]' // Организация ассетов
+                }
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/i,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[hash][ext][query]'
                 }
             }
         ],

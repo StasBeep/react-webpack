@@ -3,15 +3,15 @@
 > Дата обновления инструкции: `25.07.2025`
 
 ## Запуск проекта react на webpack
-```
+```cmd
 npm run start -dev
 ```
-```
+```cmd
 npm run start
 ```
 
 ## Сборка прокта
-```
+```cmd
 npm run build
 ```
 
@@ -24,37 +24,37 @@ npm init -y
 
 или, если нужна ручная настройка `package.json`
 
-```
+```cmd
 npm init
 ```
 
 2. Устанавливаем зависимости react
 
-```
+```cmd
 npm install react react-dom
 ```
 
 3. Typescript
 
-```
+```cmd
 npm install --save-dev typescript @types/react @types/react-dom
 ```
 
 4. Webpack
 
-```
+```cmd
 npm install --save-dev webpack webpack-cli webpack-dev-server html-webpack-plugin
 ```
 
 5. Loaders
 
-```
+```cmd
 npm install --save-dev ts-loader css-loader style-loader file-loader
 ```
 
 6. Создаём файл tsconfig.json в корне репозитория с содержимым:
 
-```
+```ts
 {
     "compilerOptions": {
         "target": "es2016",
@@ -75,7 +75,7 @@ npm install --save-dev ts-loader css-loader style-loader file-loader
 ```
 
 7. Создаём файл `webpack.config.ts`:
-```
+```ts
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // Минимзация файлов css
@@ -209,7 +209,7 @@ module.exports = {
 
 8. Создаём файл `index.html` в папке `public`:
 
-```
+```html
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -225,7 +225,7 @@ module.exports = {
 
 9. В папке `src` -> файл `index.tsx`:
 
-```
+```tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './components/App';
@@ -246,7 +246,7 @@ root.render(
 
 10. В папке `src` -> `components` -> файл `App.tsx`
 
-```
+```tsx
 import { BrowserRouter } from "react-router-dom";
 import Router from "../router/Router";
 
@@ -263,13 +263,13 @@ export default App;
 
 и устанавливаем `router`
 
-```
+```cmd
 npm install react-router-dom --save
 ```
 
 создаём папку `router` -> с файлом `Router.tsx`
 
-```
+```tsx
 import { Route, Routes } from 'react-router-dom';
 
 import MainPage from '../components/pages/MainPage';
@@ -287,7 +287,7 @@ export default Router;
 
 11. В папке `components` -> создаём папку `pages` -> файл `MainPage.tsx`
 
-```
+```tsx
 const MainPage = () => {
     return <div>
         Main Page
@@ -301,7 +301,7 @@ export default MainPage;
 
 13. В папке `src` -> папку `styles` -> файл `index.scss` или `index.css`:
 
-```
+```css
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -315,7 +315,7 @@ h1 {
 
 14. `package.json` добиваем:
 
-```
+```json
 ...
 "scripts": {
     "start": "webpack serve --mode development",
@@ -327,43 +327,43 @@ h1 {
 
 15. Используем `ts` в `webpack`
 
-```
+```cmd
 npm install --save-dev typescript ts-node
 ```
 
 ---
 
-```
+```cmd
 npm install --save-dev @types/node
 ```
 
 16. Устанавливаем plugin для улучшения webpack
 
-```
+```cmd
 npm install copy-webpack-plugin --save-dev
 ```
 
 ---
 
-```
+```cmd
 npm i mini-css-extract-plugin --save-dev
 ```
 
 ---
 
-```
+```cmd
 npm i webpack-bundle-analyzer --save-dev
 ```
 
 ---
 
-```
+```cmd
 npm i clean-webpack-plugin --save-dev
 ```
 
 ---
 
-```
+```cmd
 npm install sass-loader sass webpack --save-dev
 ```
 
@@ -371,39 +371,39 @@ npm install sass-loader sass webpack --save-dev
 
 18. Создаём в корне репозитория файлы: `.env` и ` .env.production`
 
-```
+```cmd
 REACT_APP_BASEURL=http://localhost:3001
 ```
 
 где `http://localhost:3001` адрес сервера backend для dev-разработки и production
 
 устанавливаем работу с `.env` в webpack
-```
+```cmd
 npm install dotenv-webpack --save-dev
 ```
 
 19. Запускаем сборку
     Для разработки
 
-```
+```cmd
 npm run start --dev
 ```
 
 Для production
 
-```
+```cmd
 npm run start
 ```
 
 20. Устанавливаем `axios` для работы с api
 
-```
+```cmd
 npm install axios
 ```
 
 21. Создаём файл в `src` -> `api` -> `index.ts`
 
-```
+```tsx
 import axios from "axios";
 
 export const $api = axios.create({
@@ -466,7 +466,7 @@ $api.interceptors.response.use(function (response) {
 
 22. В папке `api` создаём папку `controllers` -> файл `___-controller.ts`, в моём случае `common-controller.ts`
 
-```
+```tsx
 import { $api, config } from "../index";
 
 export const getCommon = () => {
@@ -509,7 +509,7 @@ useEffect(() => {
 
 ---
 #### Настроенный `webpack.config.ts`:
-```
+```ts
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // Минимзация файлов css
@@ -642,12 +642,12 @@ module.exports = {
 ```
 ---
 Подключение `mobx` в проект
-```
+```cmd
 npm install mobx mobx-react
 ```
 
 Создать папку `store` и внутри файл `store.ts` c содержимым
-```
+```ts
 import { makeAutoObservable } from 'mobx';
 import { createContext } from "react";
 
@@ -666,7 +666,7 @@ export const storeContext = createContext(store);
 ```
 
 Но чтобы проект заработал нужно перейти в `index.tsx` и добавить строки:
-```
+```tsx
 ...
 import { Provider } from 'mobx-react';
 import { store } from './store/store'; // или другой файл

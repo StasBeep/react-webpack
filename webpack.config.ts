@@ -28,7 +28,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         publicPath: '/',
-        filename: 'bundle.js',
+        filename: '[name].[contenthash].js',  // Динамические имена для чанков
         clean: true,
     },
     resolve: {
@@ -36,14 +36,25 @@ module.exports = {
     },
     optimization: {
         minimize: true,
-        minimizer: [new TerserPlugin()],
+        minimizer: [new TerserPlugin({
+            parallel: true, // Ускоряем минификацию
+        })],
+        splitChunks: {
+            chunks: 'all', // Разделяем vendor код
+        }
     },
     module: {
         rules: [
             {
                 test: /\.(ts|tsx)$/,
                 exclude: /(node_modules|bower_components)/,
-                use: 'ts-loader',
+                use: {
+                    loader: 'ts-loader',
+                    options: {
+                        transpileOnly: true, // Ускоряет сборку
+                        experimentalWatchApi: true, // Улучшает watch mode
+                    },
+                },
             },
             {
                 test: /\.css$/,
@@ -56,15 +67,18 @@ module.exports = {
             {
                 test: /\.(png|svg|jpg|jpeg|gif|mp3)$/i,
                 type: 'asset/resource',
-            },
+                generator: {
+                    filename: 'assets/[hash][ext][query]' // Организация ассетов
+                }
+            }
         ],
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './public/index.html',
+            template: './public/index.html'
         }),
         new MiniCssExtractPlugin({
-            filename: 'main.bundle.css',
+            filename: '[name].[contenthash].css', // Добавляем хеш
         }),
         new CopyWebpackPlugin({
             patterns: [
@@ -73,23 +87,30 @@ module.exports = {
                     to: path.resolve(__dirname, 'dist'),
                     globOptions: {
                         ignore: ['**/index.html']
-                    },
-                    noErrorOnMissing: true // Не ругайся, если папка с файлами пуста
+                    }
                 }
             ]
         }),
         // Анализатор занятости места
-        new BundleAnalyzerPlugin(),
+        // new BundleAnalyzerPlugin(),
         // Очистка перед каждой сборкой
         new CleanWebpackPlugin(),
     ],
     devServer: {
         static: {
-            directory: path.join(__dirname, 'public')
+            directory: path.join(__dirname, 'public'),
         },
         compress: true,
         port: 3000,
         hot: true,
         open: true,
+        historyApiFallback: true,
+        watchFiles: ['src/**/*', 'public/**/*'], // Явно указываем за какими файлами следить
+        client: {
+            overlay: {
+                errors: true,
+                warnings: false,
+            },
+        }
     },
 };

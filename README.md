@@ -1,6 +1,6 @@
 # react-webpack
 
-> Дата обновления инструкции: `25.07.2025`
+> Дата обновления инструкции: `02.10.2025`
 
 ## Запуск проекта react на webpack
 ```cmd
@@ -681,3 +681,401 @@ import { store } from './store/store'; // или другой файл
 </Provider>
 ...
 ```
+
+### Mobx (расширенный, для больших проектов)
+
+1. Установите MobX и React интеграцию
+
+```bash
+npm install mobx mobx-react
+```
+
+2. Основные концепции:
+
+- Observable state - данные, за которыми следит MobX
+- Actions - методы, которые изменяют состояние
+- Computed values - производные значения из состояния
+- Reactions - автоматические реакции на изменения состояния
+
+3. Создаём `CouterStore.ts` в папке `stores` -> `store`
+```tsx
+import { makeObservable, observable, action } from 'mobx';
+
+class CounterStore {
+    count = 0;
+
+    constructor() {
+        makeObservable(this, {
+            count: observable, // отслеживание переменной
+            increment: action, // метод изменения данных
+            decrement: action
+        });
+    }
+
+    increment = () => {
+        this.count++;
+    };
+
+    decrement = () => {
+        this.count--;
+    };
+}
+
+const counterStore = new CounterStore();
+export default counterStore;
+```
+
+4. Обернуть `react-компонент` в `observer`, чтобы взаимодействовать с данными
+
+```tsx
+import { observer } from "mobx-react";
+
+const Mobx = observer(() => {
+    return <div>
+
+    </div>
+});
+
+export default Mobx;
+```
+
+5. Данные можно изменять, и смотреть
+
+```tsx
+import counterStore from "../../stores/store/CounterStore";
+
+import { observer } from "mobx-react";
+
+const Mobx = observer(() => {
+    return <div>
+        <h1>{counterStore.count}</h1>
+        <button onClick={counterStore.increment}>+</button>
+        <button onClick={counterStore.decrement}>-</button>
+        <h2>{counterStore.doubleCount}</h2>
+    </div>
+});
+
+export default Mobx;
+```
+
+6. Создаём `TestStore.ts` в папке `stores` -> `store`
+```tsx
+import { makeObservable, observable, action, runInAction, computed } from 'mobx';
+import { testData } from '../../api/controllers/common-controller';
+import { testDataDto } from '../../types/testData';
+
+export class TestStore {
+    testData: testDataDto[] = [];
+    loading = false;
+    error = false;
+
+    constructor() {
+        makeObservable(this, {
+            testData: observable,
+            loading: observable,
+            error: observable,
+            dataLength: computed,
+            fetchData: action
+        });
+    }
+
+    fetchData = async () => {
+        this.loading = true;
+
+        await testData()
+            .then((response) => {
+                runInAction(() => {
+                    this.testData = response.data;
+                    this.loading = false;
+                })
+            })
+            .catch((error) => {
+                console.log(error);
+                runInAction(() => {
+                    this.error = true;
+                    this.loading = false;
+                })
+            })
+    };
+
+    get dataLength() {
+        return this.testData.length;
+    }
+}
+```
+
+7. Данные можно просмотреть
+```tsx
+import { observer } from "mobx-react";
+import counterStore from "../../stores/store/CounterStore";
+import testStore from "../../stores/store/TestStore";
+import { useEffect } from "react";
+
+const Mobx = observer(() => {
+    useEffect(() => {
+        testStore.fetchData()
+    }, [])
+
+    return <div>
+        <h1>{counterStore.count}</h1>
+        <button onClick={counterStore.increment}>+</button>
+        <button onClick={counterStore.decrement}>-</button>
+        <h2>{counterStore.doubleCount}</h2>
+        <hr></hr>
+        {testStore.loading ?
+            'Загрузка'
+            :
+            (
+                <>
+                    <ol>
+                        {
+                            testStore.testData.map((item, ind) => (
+                                <li key={ind}>
+                                    {item.id} / {item.name} / {item.age}
+                                </li>
+                            ))
+                        }
+                    </ol>
+                    {testStore.error ? null : testStore.dataLength}
+                </>
+            )
+        }
+        {testStore.error ? 'Ошибка' : null}
+    </div>
+});
+
+export default Mobx;
+```
+
+8. Запуск через единый `root-файл`
+в папке `stores` создаём `RootStore.ts`
+```tsx
+import { makeObservable } from 'mobx';
+import { TestStore } from './store/TestStore';
+import { CounterStore } from './store/CounterStore';
+
+export class RootStore {
+    testStore: TestStore;
+    counterStore: CounterStore;
+
+    constructor() {
+        // Передаем текущий экземпляр RootStore в дочерние хранилища
+        this.testStore = new TestStore(this);
+        this.counterStore = new CounterStore(this);
+
+        //  Настройка MobX наблюдение
+        // - this: наблюдаемый объект
+        // - {}: нет полей для наблюдения (они в дочерних хранилищах)
+        // - { autoBind: true }: автоматическая привязка методов
+        makeObservable(this, {}, { autoBind: true });
+    }
+}
+
+// Создаем экземпляр корневого хранилища
+const rootStore = new RootStore();
+export default rootStore;
+```
+
+в папке `stores` создаём `RootStoreContext.ts`
+```tsx
+import { createContext, useContext } from 'react';
+import { RootStore } from './RootStore';
+
+export const RootStoreContext = createContext<RootStore | null>(null);
+
+export const useStores = () => {
+    const store = useContext(RootStoreContext);
+    if (!store) {
+        throw new Error('useStores must be used within a StoreProvider');
+    }
+    return store;
+};
+```
+
+В `index.tsx` добавить
+```tsx
+...
+import { RootStoreContext } from './stores/RootStoreContext';
+import rootStore from './stores/RootStore';
+...
+
+...
+<RootStoreContext.Provider value={rootStore}>
+    <App />
+</RootStoreContext.Provider>
+...
+```
+
+Компонент `Mobx.tsx`
+```tsx
+import { observer } from "mobx-react";
+import { useEffect } from "react";
+import { useStores } from "../../stores/RootStoreContext";
+
+const Mobx = observer(() => {
+    // Получаем хранилища через контекст
+    const { testStore, counterStore } = useStores();
+
+    useEffect(() => {
+        testStore.fetchData()
+    }, [])
+
+    return <div>
+        <h1>{counterStore.count}</h1>
+        <button onClick={counterStore.increment}>+</button>
+        <button onClick={counterStore.decrement}>-</button>
+        <h2>{counterStore.doubleCount}</h2>
+        <hr></hr>
+        {testStore.loading ?
+            'Загрузка'
+            :
+            (
+                <>
+                    <ol>
+                        {
+                            testStore.testData.map((item, ind) => (
+                                <li key={ind}>
+                                    {item.id} / {item.name} / {item.age}
+                                </li>
+                            ))
+                        }
+                    </ol>
+                    {testStore.error ? null : testStore.dataLength}
+                </>
+            )
+        }
+        {testStore.error ? 'Ошибка' : null}
+    </div>
+});
+
+export default Mobx;
+```
+
+В файлах `CounterStore.ts` `TestStore.ts` тоже есть небольшие изменения и можно комбинировать между несколькими `store`
+```tsx
+import { makeObservable, observable, action, computed } from 'mobx';
+import { RootStore } from '../RootStore';
+
+export class CounterStore {
+    count = 0;
+
+    constructor(private rootStore: RootStore) { // добавляется зависимость
+        makeObservable(this, {
+            count: observable, // отслеживание переменной
+            increment: action, // метод изменения данных
+            decrement: action,
+            doubleCount: computed // производные значения (просмотр) на основе данных, хранящихся в class
+        });
+    }
+
+    increment = () => {
+        this.count++;
+    };
+
+    decrement = () => {
+        this.count--;
+    };
+
+    get doubleCount() { // используется для просмотра количества элементов в массиве, или другие данные, которые пересчитываются на основе переменных используемые в class
+        return this.count * 2;
+    };
+
+    // Пример использования другого хранилища
+    resetIfTestDataEmpty = () => {
+        if (this.rootStore.testStore.dataLength === 0) {
+            this.count = 0;
+        }
+    };
+}
+```
+
+```tsx
+import { makeObservable, observable, action, runInAction, computed } from 'mobx';
+import { testData } from '../../api/controllers/common-controller';
+import { testDataDto } from '../../types/testData';
+import { RootStore } from '../RootStore';
+
+export class TestStore {
+    testData: testDataDto[] = [];
+    loading = false;
+    error = false;
+
+    constructor(private rootStore: RootStore) { // добавляется зависимость
+        makeObservable(this, {
+            testData: observable,
+            loading: observable,
+            error: observable,
+            dataLength: computed,
+            fetchData: action
+        });
+    }
+
+    fetchData = async () => {
+        this.loading = true;
+
+        await testData()
+            .then((response) => {
+                runInAction(() => {
+                    this.testData = response.data;
+                    this.loading = false;
+                })
+            })
+            .catch((error) => {
+                console.log(error);
+                runInAction(() => {
+                    this.error = true;
+                    this.loading = false;
+                })
+            })
+    };
+
+    get dataLength() {
+        return this.testData.length;
+    }
+
+    // Пример использования другого хранилища
+    get countFromCounterStore() {
+        return this.rootStore.counterStore.count;
+    }
+}
+```
+
+9. Реакции `Mobx`
+* autorun
+Выполняет функцию сразу и при каждом изменении зависимостей:
+```tsx
+import { autorun } from 'mobx';
+
+autorun(() => {
+  console.log(`Данные загружены: ${store.testData.length} элементов`);
+});
+```
+- Используйте для логирования, аналитики или синхронизации с localStorage.
+---
+* reaction
+Запускает эффект только при изменении конкретных данных:
+```tsx
+import { reaction } from 'mobx';
+
+reaction(
+  () => store.testData.length, // Отслеживаемое значение
+  (length) => {
+    if (length > 10) alert('Данных больше 10!');
+  }
+);
+```
+- Используйте для условных действий (например, уведомлений).
+---
+* when
+Выполняет действие один раз при выполнении условия:
+```tsx
+import { when } from 'mobx';
+
+when(
+  () => store.testData.length > 0,
+  () => {
+    console.log('Данные наконец загружены!');
+  }
+);
+```
+- Используйте для одноразовых инициализаций.

@@ -229,7 +229,7 @@ module.exports = {
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './components/App';
-import './styles/index.css';
+import './styles/index.scss';
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
@@ -244,7 +244,7 @@ root.render(
 
 Обратить внимение на <React.StrictMode> вызывает api запросы повторно (2 раза), для dev - допустимо, при раскатке - убрать
 
-10. В папке `src` -> `components` -> файл `App.tsx`
+10. В папке `src` -> файл `App.tsx`
 
 ```tsx
 import { BrowserRouter } from "react-router-dom";
@@ -301,6 +301,8 @@ export default MainPage;
 
 13. В папке `src` -> папку `styles` -> файл `index.scss` или `index.css`:
 
+В файле `index.tsx` подключён `index.scss` через import, переключить на своё расширение
+
 ```css
 body {
     font-family: Arial, sans-serif;
@@ -315,6 +317,7 @@ h1 {
 
 14. `package.json` добиваем:
 
+Там есть раздел `"scripts": {}` со своими командами, нужно заменить:
 ```json
 ...
 "scripts": {

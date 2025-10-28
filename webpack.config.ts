@@ -1,6 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-// Минимзация файлов css
+// Минимфикация файлов css
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const Dotenv = require('dotenv-webpack');
 
@@ -27,10 +27,10 @@ module.exports = {
     devtool: 'source-map',
     entry: './src/index.tsx',
     output: {
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, 'build'), // Сборка в папку build
         publicPath: '/',
         filename: '[name].[contenthash].js',  // Динамические имена для чанков
-        clean: true,
+        clean: true, // Очищает папку build автоматически
     },
     resolve: {
         extensions: ['.tsx', '.jsx', '.ts', '.js'],
@@ -62,7 +62,7 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                use: ['style-loader', 'css-loader'],
+                use: [MiniCssExtractPlugin.loader, 'css-loader'], // Используем MiniCssExtractPlugin для CSS
             },
             {
                 test: /\.s[ca]ss$/,
@@ -96,9 +96,9 @@ module.exports = {
             patterns: [
                 {
                     from: path.resolve(__dirname, 'public'),
-                    to: path.resolve(__dirname, 'dist'),
+                    to: path.resolve(__dirname, 'build'), // Копируем в build, а не в dist
                     globOptions: {
-                        ignore: ['**/index.html']
+                        ignore: ['**/index.html'] // Игнорируем index.html, так как он обрабатывается HtmlWebpackPlugin
                     },
                     noErrorOnMissing: true // Не ругайся, если папка с файлами пуста
                 }
@@ -106,8 +106,8 @@ module.exports = {
         }),
         // Анализатор занятости места
         // new BundleAnalyzerPlugin(),
-        // Очистка перед каждой сборкой
-        new CleanWebpackPlugin()
+        // Очистка перед каждой сборкой (можно убрать, так как output.clean: true)
+        // new CleanWebpackPlugin()
     ],
     devServer: {
         static: {

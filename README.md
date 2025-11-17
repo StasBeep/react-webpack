@@ -228,7 +228,7 @@ module.exports = {
 ```tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './components/App';
+import App from './App';
 import './styles/index.scss';
 
 const root = ReactDOM.createRoot(
@@ -267,12 +267,12 @@ export default App;
 npm install react-router-dom --save
 ```
 
-создаём папку `router` -> с файлом `Router.tsx`
+создаём папку `router` -> с файлом `Router.tsx` в `src`
 
 ```tsx
 import { Route, Routes } from 'react-router-dom';
 
-import MainPage from '../components/pages/MainPage';
+import MainPage from '../pages/MainPage';
 
 const Router = () => {
     return (
@@ -285,7 +285,7 @@ const Router = () => {
 export default Router;
 ```
 
-11. В папке `components` -> создаём папку `pages` -> файл `MainPage.tsx`
+11. В папке `src` -> создаём папку `pages` -> файл `MainPage.tsx`
 
 ```tsx
 const MainPage = () => {
